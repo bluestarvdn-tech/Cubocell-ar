@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CuboCell AR – Cubo para Impressão</title>
+<style>
+  @media print {
+    body { margin: 0; }
+    .no-print { display: none !important; }
+    .pagina { page-break-after: always; }
+  }
+  body { font-family: Arial, sans-serif; background: #f5f5f5; color: #222; padding: 20px; }
+  h1 { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  h1 span { color: #e74c3c; }
+  .subtitulo { color: #666; font-size: 14px; margin-bottom: 24px; }
+  .instrucoes { background: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .instrucoes h2 { font-size: 16px; margin-bottom: 12px; }
+  .instrucoes ol { padding-left: 20px; font-size: 14px; line-height: 2; color: #444; }
+  .cubo-wrap { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+  .cubo-wrap h2 { font-size: 16px; margin-bottom: 20px; }
+
+  /* Cruz do cubo — tamanho 6x6cm por face para impressão */
+  .cruz {
+    display: grid;
+    grid-template-columns: repeat(4, 90px);
+    grid-template-rows: repeat(3, 90px);
+    gap: 1px;
+    width: fit-content;
+    margin: 0 auto;
+  }
+  .face {
+    width: 90px; height: 90px;
+    border: 2px solid #333;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    text-align: center; padding: 6px;
+    position: relative; overflow: hidden;
+  }
+  .face .num { position: absolute; top: 4px; left: 6px; font-size: 16px; font-weight: 800; opacity: 0.2; }
+  .face .icone { font-size: 26px; margin-bottom: 2px; }
+  .face .nome { font-size: 9px; font-weight: 700; line-height: 1.3; }
+  .face.aba { background: #f0f0f0 !important; border-style: dashed; }
+
+  /* Padrões para cada face */
+  .face.f1 { background: #ffe0e0; grid-column: 2; grid-row: 1; }
+  .face.f2 { background: #e0f0e0; grid-column: 1; grid-row: 2; }
+  .face.f3 { background: #e0f0ff; grid-column: 2; grid-row: 2; }
+  .face.f4 { background: #fff3e0; grid-column: 3; grid-row: 2; }
+  .face.f5 { background: #f3e5f5; grid-column: 4; grid-row: 2; }
+  .face.f6 { background: #fff9e0; grid-column: 2; grid-row: 3; }
+
+  .nota { background: #fff8e1; border-left: 4px solid #f9a825; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 20px; font-size: 13px; color: #555; }
+  .qr-section { background: white; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .qr-section h2 { font-size: 16px; margin-bottom: 16px; }
+  .qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .qr-card { border-radius: 12px; padding: 16px; text-align: center; border: 2px solid; }
+  .qr-card.animal { border-color: #e74c3c; }
+  .qr-card.vegetal { border-color: #27ae60; }
+  .qr-card.procarionte { border-color: #e67e22; }
+  .qr-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: white; margin-bottom: 8px; }
+  .animal .qr-badge { background: #e74c3c; }
+  .vegetal .qr-badge { background: #27ae60; }
+  .procarionte .qr-badge { background: #e67e22; }
+  .qr-card h3 { font-size: 14px; margin-bottom: 6px; }
+  .qr-placeholder { width: 120px; height: 120px; border: 2px dashed #ccc; border-radius: 8px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; text-align: center; padding: 8px; }
+  .url { font-size: 10px; color: #666; font-family: monospace; word-break: break-all; background: #f5f5f5; padding: 4px 8px; border-radius: 4px; margin-top: 6px; }
+  .btn-print { display: block; margin: 0 auto; background: #0a0a1a; color: white; border: none; padding: 14px 32px; border-radius: 12px; font-size: 16px; cursor: pointer; font-weight: 600; }
+  .marcadores-info { background: #e8f5e9; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; font-size: 13px; color: #2e7d32; border: 1px solid #a5d6a7; }
+</style>
+</head>
+<body>
+
+<h1>Cubo<span>Cell</span> AR</h1>
+<p class="subtitulo">Realidade Aumentada • Biologia Celular • Sem aplicativo</p>
+
+<div class="marcadores-info no-print">
+  ⚠️ <strong>Importante:</strong> Este cubo usa marcadores visuais que a câmera reconhece. As faces 1, 2 e 3 devem ser impressas com os arquivos de marcador gerados (face1-animal.png, face2-vegetal.png, face3-procarionte.png) da pasta <code>markers/</code>. O padrão visual nas faces é o que permite a câmera detectar e projetar a célula correta.
+</div>
+
+<div class="qr-section">
+  <h2>📱 QR Codes — Escaneie para abrir a câmera AR</h2>
+  <div class="qr-grid">
+    <div class="qr-card animal">
+      <span class="qr-badge">Animal</span>
+      <h3>Célula Animal</h3>
+      <p style="font-size:11px;color:#666">Aponte para a face vermelha</p>
+      <div class="qr-placeholder">Cole aqui o QR Code gerado para a URL abaixo</div>
+      <div class="url">seusite.github.io/cubocell-ar/celula-animal.html</div>
+    </div>
+    <div class="qr-card vegetal">
+      <span class="qr-badge">Vegetal</span>
+      <h3>Célula Vegetal</h3>
+      <p style="font-size:11px;color:#666">Aponte para a face verde</p>
+      <div class="qr-placeholder">Cole aqui o QR Code gerado para a URL abaixo</div>
+      <div class="url">seusite.github.io/cubocell-ar/celula-vegetal.html</div>
+    </div>
+    <div class="qr-card procarionte">
+      <span class="qr-badge">Procarionte</span>
+      <h3>Célula Procarionte</h3>
+      <p style="font-size:11px;color:#666">Aponte para a face laranja</p>
+      <div class="qr-placeholder">Cole aqui o QR Code gerado para a URL abaixo</div>
+      <div class="url">seusite.github.io/cubocell-ar/procarionte.html</div>
+    </div>
+  </div>
+</div>
+
+<div class="cubo-wrap">
+  <h2>✂️ Molde do cubo — Recorte, dobre e cole</h2>
+  <div class="cruz">
+    <div class="face f1"><span class="num">1</span><span class="icone">⬡</span><span class="nome">FACE 1<br>Marcador<br>CuboCell</span></div>
+    <div class="face f2"><span class="num">2</span><span class="icone">⬡</span><span class="nome">FACE 2<br>Marcador<br>CuboCell</span></div>
+    <div class="face f3"><span class="num">3</span><span class="icone">⬡</span><span class="nome">FACE 3<br>Marcador<br>CuboCell</span></div>
+    <div class="face f4"><span class="num">4</span><span class="icone">⬡</span><span class="nome">FACE 4<br>Marcador<br>CuboCell</span></div>
+    <div class="face f5"><span class="num">5</span><span class="icone">⬡</span><span class="nome">FACE 5<br>Marcador<br>CuboCell</span></div>
+    <div class="face f6"><span class="num">6</span><span class="icone">⬡</span><span class="nome">FACE 6<br>Marcador<br>CuboCell</span></div>
+  </div>
+  <p style="text-align:center;font-size:12px;color:#666;margin-top:12px;">Imprima o arquivo <strong>markers/cubocell-marker.png</strong> 6 vezes e cole em cada face</p>
+
+  <div class="nota">
+    💡 <strong>Como montar:</strong> Imprima o arquivo <strong>cubocell-marker.png</strong> 6 vezes (uma por face) e cole antes de dobrar. Todas as faces devem ter o mesmo marcador — assim a câmera detecta o cubo em qualquer posição e a célula gira junto quando o aluno gira o cubo.
+  </div>
+</div>
+
+<div class="instrucoes">
+  <h2>📋 Como usar em sala de aula</h2>
+  <ol>
+    <li>Imprima este guia e os marcadores (pasta markers/)</li>
+    <li>Monte o cubo colando os marcadores nas faces 1, 2 e 3</li>
+    <li>Publique o site no GitHub Pages (veja o README)</li>
+    <li>Gere os 3 QR Codes em qr.io e cole neste guia</li>
+    <li>O aluno escaneia o QR Code da célula que quer ver</li>
+    <li>O site abre no navegador e pede acesso à câmera</li>
+    <li>O aluno aponta o celular para a face correspondente do cubo</li>
+    <li>A célula 3D aparece projetada sobre o cubo em tempo real!</li>
+    <li>Toque nos botões da tela para ver cada organela</li>
+  </ol>
+</div>
+
+<button class="btn-print no-print" onclick="window.print()">🖨️ Imprimir guia</button>
+
+</body>
+</html>
